@@ -1,6 +1,6 @@
 const express = require('express');
-const ytdl = require('@distube/ytdl-core');
 const cors = require('cors');
+const ytdl = require('@distube/ytdl-core');
 const app = express();
 
 app.use(cors());
@@ -9,11 +9,11 @@ app.get('/download', async (req, res) => {
     const videoURL = req.query.url;
 
     if (!videoURL) {
-        return res.status(400).send('URL is required');
+        return res.status(400).send('URL ki zaroorat hai bhai!');
     }
 
     try {
-        // YouTube ko "Asli Browser" lagne ke liye headers
+        // YouTube ko dhoka dene ke liye headers
         const options = {
             requestOptions: {
                 headers: {
@@ -27,26 +27,27 @@ app.get('/download', async (req, res) => {
 
         const info = await ytdl.getInfo(videoURL, options);
         
-        // Sab se achi quality dhoondna
-        const format = ytdl.chooseFormat(info.formats, { quality: 'highestvideo', filter: 'audioandvideo' });
+        // Sab se achi quality select karna (Audio + Video)
+        const format = ytdl.chooseFormat(info.formats, { 
+            quality: 'highestvideo', 
+            filter: 'audioandvideo' 
+        });
 
         if (!format) {
-            return res.status(404).send('No suitable format found');
+            return res.status(404).send('Format nahi mila!');
         }
 
-        // Browser ko batana ke ye file download honi hai
-        res.header('Content-Disposition', `attachment; filename="video.mp4"`);
-        
-        // Video stream shuru karna
+        // File download shuru karna
+        res.header('Content-Disposition', 'attachment; filename="video.mp4"');
         ytdl(videoURL, { format: format, ...options }).pipe(res);
 
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Error processing download: ' + err.message);
+        console.error('Error:', err.message);
+        res.status(500).send('YouTube ne block kiya ya koi masla hai: ' + err.message);
     }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server chalu hai port ${PORT} par`);
 });
