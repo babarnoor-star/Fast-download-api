@@ -11,39 +11,25 @@ app.get('/download', async (req, res) => {
         if (!videoURL) return res.status(400).send('URL missing!');
         videoURL = decodeURIComponent(videoURL).trim();
 
-        console.log("Cobalt request for:", videoURL);
+        console.log("Downloading from:", videoURL);
 
-        // Cobalt API ko request bhej rahe hain
-        const cobaltRes = await axios.post('https://api.cobalt.tools/api/json', {
+        // Sirf Non-YouTube platforms ke liye
+        const response = await axios({
+            method: 'get',
             url: videoURL,
-            vQuality: "720",
-            filenamePattern: "basic"
-        }, {
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
+            responseType: 'stream',
+            headers: { 
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': '*/*'
             }
         });
 
-        if (cobaltRes.data.status === 'stream' || cobaltRes.data.status === 'redirect') {
-            const directLink = cobaltRes.data.url;
-
-            // Direct file stream karna
-            const videoStream = await axios({
-                method: 'get',
-                url: directLink,
-                responseType: 'stream'
-            });
-
-            res.header('Content-Disposition', `attachment; filename="video_download.mp4"`);
-            return videoStream.data.pipe(res);
-        } else {
-            return res.status(500).send('Cobalt could not find a streamable link.');
-        }
+        res.header('Content-Disposition', 'attachment; filename="video_fast_dl.mp4"');
+        return response.data.pipe(res);
 
     } catch (err) {
-        console.error('Cobalt Error:', err.message);
-        res.status(500).send('Download Failed: YouTube/Platform protection is too high.');
+        console.error('Error:', err.message);
+        res.status(500).send('Download Failed. Link may be expired or private.');
     }
 });
 
