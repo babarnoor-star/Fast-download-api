@@ -5,6 +5,12 @@ const app = express();
 
 app.use(cors());
 
+// --- YE SECTION ADD KIYA HAI CRON-JOB KE LIYE ---
+app.get('/', (req, res) => {
+    res.send('Server is live and kicking! Cron-job is working.');
+});
+// ----------------------------------------------
+
 app.get('/download', async (req, res) => {
     try {
         let videoURL = req.query.url;
